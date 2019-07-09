@@ -1,22 +1,23 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
-import { FaGithubAlt, FaPlus, FaSpinner } from "react-icons/fa";
+import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 
-import Container from "../../components/Container";
-import { Form, SubmitButton, List } from "./styles";
+import Container from '../../components/Container';
+import { Form, SubmitButton, List } from './styles';
 
-import api from "../../services/api";
+import api from '../../services/api';
 
 export default class Main extends Component {
   state = {
-    newRepo: "",
+    newRepo: '',
     repositories: [],
     loading: false,
+    error: '',
   };
 
   componentDidMount() {
-    const repositories = localStorage.getItem("repositories");
+    const repositories = localStorage.getItem('repositories');
 
     if (repositories) {
       this.setState({
@@ -29,7 +30,7 @@ export default class Main extends Component {
     const { repositories } = this.state;
 
     if (prevState.repositories !== repositories) {
-      localStorage.setItem("repositories", JSON.stringify(repositories));
+      localStorage.setItem('repositories', JSON.stringify(repositories));
     }
   }
 
@@ -40,25 +41,40 @@ export default class Main extends Component {
   handleSubmit = async e => {
     e.preventDefault();
 
-    this.setState({ loading: true });
-
     const { newRepo, repositories } = this.state;
-    const response = await api.get(`/repos/${newRepo}`);
 
-    const data = {
-      name: response.data.full_name,
-      avatar: response.data.owner.avatar_url,
-    };
+    if (!newRepo) return;
 
-    this.setState({
-      repositories: [...repositories, data],
-      newRepo: "",
-      loading: false,
-    });
+    this.setState({ loading: true, error: '' });
+
+    try {
+      const exist = repositories.find(
+        repository => repository.name === newRepo
+      );
+
+      if (exist) {
+        throw new Error('Repository already exists');
+      }
+
+      const response = await api.get(`/repos/${newRepo}`);
+
+      const data = {
+        name: response.data.full_name,
+        avatar: response.data.owner.avatar_url,
+      };
+
+      this.setState({
+        repositories: [...repositories, data],
+        newRepo: '',
+        loading: false,
+      });
+    } catch (error) {
+      this.setState({ loading: false, error: error.message, newRepo: '' });
+    }
   };
 
   render() {
-    const { newRepo, repositories, loading } = this.state;
+    const { newRepo, repositories, loading, error } = this.state;
 
     return (
       <Container>
@@ -67,15 +83,15 @@ export default class Main extends Component {
           Repositórios
         </h1>
 
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={this.handleSubmit} error={error}>
           <input
             type="text"
-            placeholder="Adicionar repositório"
+            placeholder={error || 'Adicionar repositório'}
             value={newRepo}
             onChange={this.handleInputChange}
           />
 
-          <SubmitButton loading={loading}>
+          <SubmitButton loading={loading ? 1 : 0}>
             {loading ? <FaSpinner /> : <FaPlus />}
           </SubmitButton>
         </Form>
