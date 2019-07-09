@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const Owner = styled.header`
   display: flex;
@@ -41,7 +41,7 @@ export const Owner = styled.header`
 `;
 
 export const IssueList = styled.ul`
-  padding-top: 30px;
+  padding-top: 10px;
   margin-top: 30px;
   border-top: 1px solid #eee;
   list-style: none;
@@ -94,10 +94,10 @@ const getConstrat = hexcolor => {
   const g = parseInt(hexcolor.substr(2, 2), 16);
   const b = parseInt(hexcolor.substr(4, 2), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "black" : "white";
+  return yiq >= 128 ? 'black' : 'white';
 };
 
-export const Label = styled.span`
+export const IssueLabel = styled.span`
   background: #${props => props.labelColor};
   color: ${props => getConstrat(props.labelColor)};
   border-radius: 2px;
@@ -107,4 +107,56 @@ export const Label = styled.span`
   padding: 3px 4px;
   margin-right: 10px;
   display: inline-block;
+`;
+
+export const Filter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+`;
+
+export const FilterButton = styled.button.attrs({
+  type: 'button',
+})`
+  width: 60px;
+  height: 20px;
+  margin-left: 10px;
+  background: ${props => (props.selected ? '#7159c1' : '#fff')};
+  border: 1px solid #7159c1;
+  color: ${props => (props.selected ? '#fff' : '#7159c1')};
+  border-radius: 5px;
+`;
+
+export const Paginator = styled.div`
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #7159c1;
+    color: #fff;
+    border-radius: 50%;
+    margin: 0 10px;
+  }
+
+  button {
+    width: 60px;
+    height: 20px;
+    background: #fff;
+    border: 1px solid #7159c1;
+    color: #7159c1;
+    border-radius: 5px;
+
+    :hover {
+      color: #fff;
+      background: #7159c1;
+      border: 1px solid #7159c1;
+    }
+  }
 `;

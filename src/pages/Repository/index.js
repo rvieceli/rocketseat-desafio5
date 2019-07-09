@@ -1,14 +1,21 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import PropTypes from "prop-types";
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-import { FaArrowCircleLeft } from "react-icons/fa";
-import api from "../../services/api";
+import { FaArrowCircleLeft } from 'react-icons/fa';
+import api from '../../services/api';
 
-import Container from "../../components/Container";
-import Loading from "../../components/Loading";
+import Container from '../../components/Container';
+import Loading from '../../components/Loading';
 
-import { Owner, IssueList, Label } from "./styles";
+import {
+  Owner,
+  IssueList,
+  IssueLabel,
+  Filter,
+  FilterButton,
+  Paginator,
+} from './styles';
 
 export default class Repository extends Component {
   static propTypes = {
@@ -23,9 +30,12 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    filter: 'open',
+    page: 1,
   };
 
   async componentDidMount() {
+    const { filter } = this.state;
     const { match } = this.props;
     const repoName = decodeURIComponent(match.params.repository);
 
@@ -33,7 +43,7 @@ export default class Repository extends Component {
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
-          state: "open",
+          state: filter,
           per_page: 5,
         },
       }),
@@ -46,8 +56,40 @@ export default class Repository extends Component {
     });
   }
 
+  refreshIssues = async () => {
+    const { filter, page } = this.state;
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+
+    const issues = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: filter,
+        per_page: 5,
+        page,
+      },
+    });
+
+    this.setState({
+      issues: issues.data,
+      loading: false,
+    });
+  };
+
+  handleChange = async filter => {
+    await this.setState({ filter, page: 1 });
+
+    this.refreshIssues();
+  };
+
+  handlePage = async n => {
+    const { page } = this.state;
+    await this.setState({ page: page + n });
+
+    this.refreshIssues();
+  };
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, filter, page } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -66,6 +108,27 @@ export default class Repository extends Component {
         </Owner>
 
         <IssueList>
+          <Filter>
+            <FilterButton
+              selected={filter === 'open'}
+              onClick={() => this.handleChange('open')}
+            >
+              Open
+            </FilterButton>
+            <FilterButton
+              selected={filter === 'closed'}
+              onClick={() => this.handleChange('closed')}
+            >
+              Closed
+            </FilterButton>
+            <FilterButton
+              selected={filter === 'all'}
+              onClick={() => this.handleChange('all')}
+            >
+              All
+            </FilterButton>
+          </Filter>
+
           {issues.map(issue => (
             <li key={String(issue.id)}>
               <img src={issue.user.avatar_url} alt={issue.user.login} />
@@ -79,9 +142,9 @@ export default class Repository extends Component {
                     {issue.title}
                   </a>
                   {issue.labels.map(label => (
-                    <Label key={String(label.id)} labelColor={label.color}>
+                    <IssueLabel key={String(label.id)} labelColor={label.color}>
                       {label.name}
-                    </Label>
+                    </IssueLabel>
                   ))}
                 </strong>
                 <p>{issue.user.login}</p>
@@ -89,6 +152,15 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssueList>
+        <Paginator>
+          <button type="button" onClick={() => this.handlePage(-1)}>
+            Back
+          </button>
+          <span>{page}</span>
+          <button type="button" onClick={() => this.handlePage(1)}>
+            Next
+          </button>
+        </Paginator>
       </Container>
     );
   }

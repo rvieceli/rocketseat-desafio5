@@ -1,23 +1,23 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
-import { FaGithubAlt, FaPlus, FaSpinner } from "react-icons/fa";
+import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 
-import Container from "../../components/Container";
-import { Form, SubmitButton, List } from "./styles";
+import Container from '../../components/Container';
+import { Form, SubmitButton, List } from './styles';
 
-import api from "../../services/api";
+import api from '../../services/api';
 
 export default class Main extends Component {
   state = {
-    newRepo: "",
+    newRepo: '',
     repositories: [],
     loading: false,
-    error: "",
+    error: '',
   };
 
   componentDidMount() {
-    const repositories = localStorage.getItem("repositories");
+    const repositories = localStorage.getItem('repositories');
 
     if (repositories) {
       this.setState({
@@ -30,7 +30,7 @@ export default class Main extends Component {
     const { repositories } = this.state;
 
     if (prevState.repositories !== repositories) {
-      localStorage.setItem("repositories", JSON.stringify(repositories));
+      localStorage.setItem('repositories', JSON.stringify(repositories));
     }
   }
 
@@ -45,7 +45,7 @@ export default class Main extends Component {
 
     if (!newRepo) return;
 
-    this.setState({ loading: true, error: "" });
+    this.setState({ loading: true, error: '' });
 
     try {
       const exist = repositories.find(
@@ -53,7 +53,7 @@ export default class Main extends Component {
       );
 
       if (exist) {
-        throw new Error("Repository already exists");
+        throw new Error('Repository already exists');
       }
 
       const response = await api.get(`/repos/${newRepo}`);
@@ -65,11 +65,11 @@ export default class Main extends Component {
 
       this.setState({
         repositories: [...repositories, data],
-        newRepo: "",
+        newRepo: '',
         loading: false,
       });
     } catch (error) {
-      this.setState({ loading: false, error: error.message, newRepo: "" });
+      this.setState({ loading: false, error: error.message, newRepo: '' });
     }
   };
 
@@ -86,7 +86,7 @@ export default class Main extends Component {
         <Form onSubmit={this.handleSubmit} error={error}>
           <input
             type="text"
-            placeholder={error || "Adicionar repositório"}
+            placeholder={error || 'Adicionar repositório'}
             value={newRepo}
             onChange={this.handleInputChange}
           />
